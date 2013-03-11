@@ -10,13 +10,14 @@
 function Vertex() {
     this.x = arguments[0];
     this.y = arguments[1];
-    this.halfedge;
+    this.halfEdge;
     this.angleFromCentroid;
 }
 
 function Face() {
     this.vertices = new Array();
     this.centroid;
+    this.halfEdge;
 }
 
 Face.prototype.addVertex = function(vertex) {
@@ -54,6 +55,20 @@ Face.prototype.sortVertices = function() {
     this.vertices.sort(function(a,b) {return (a.angleFromCentroid - b.angleFromCentroid)});
 }
 
+Face.prototype.makeEdges = function() {
+}
+
+function HalfEdge(vertex) {
+    this.vertex = vertex;
+    this.pair;
+    this.face;
+    this.nextEdge;
+}
+
+function Edge() {
+    this.halfedge;
+    this.halfedge2;
+}
 
 /* Example! */
 
