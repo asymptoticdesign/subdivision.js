@@ -7,17 +7,15 @@
  * A javascript library for computational geometry.
  */
 
-function Vertex() {
-    this.x = arguments[0];
-    this.y = arguments[1];
-    this.halfEdge;
-    this.angleFromCentroid;
+function Vertex(x, y) {
+    this.x = x;
+    this.y = y;
 }
 
 function Face() {
-    this.vertices = new Array();
+    this.vertices = [];
+    this.edges = [];
     this.centroid;
-    this.halfEdge;
 }
 
 Face.prototype.addVertex = function(vertex) {
@@ -48,26 +46,38 @@ Face.prototype.sortVertices = function() {
      * Sort the vertices in counterclockwise order relative to the centroid.  The centroid is automatically updated by this call, so there's no need to manually run it after adding new vertices.
      */
     this.computeCentroid();
+    var angleList = [];
     for(var i = 0; i < this.vertices.length; i++) {
 	//An extra PI is added to ensure all angles are positive.  This makes comparison a bit easier.
-	this.vertices[i].angleFromCentroid = Math.atan2(this.vertices[i].y - this.centroid.y, this.vertices[i].x - this.centroid.x) + Math.PI;
+	var angleFromCentroid = Math.atan2(this.vertices[i].y - this.centroid.y, this.vertices[i].x - this.centroid.x) + Math.PI;
+	//create a pair of vertex-angle objects for sorting
+	angleList.push([this.vertices[i], angleFromCentroid]);
     }
-    this.vertices.sort(function(a,b) {return (a.angleFromCentroid - b.angleFromCentroid)});
+    angleList.sort(function(a,b) {return a[1] - b[1]});
+    for(var i = 0; i < this.vertices.length; i++) {
+	this.vertices[i] = angleList[i][0];
+    }
 }
 
 Face.prototype.makeEdges = function() {
+    /*
+     * Sorts the vertices and then creates the edge map from the vertex data.
+     */
+    this.sortVertices();
+    for(var i = 0; i < this.vertices.length - 1; i++) {
+	var edge = new HalfEdge(this.vertices[i], this.vertices[i+1]);
+	edge.face = this;
+	this.edges.push(edge)
+    }
+    //manually add the last edge that goes from the last vertex to the first one
+    var edge = new HalfEdge(this.vertices[this.vertices.length - 1], this.vertices[0]);
+    edge.face = this;
+    this.edges.push(edge);
 }
 
-function HalfEdge(vertex) {
-    this.vertex = vertex;
-    this.pair;
+function HalfEdge(vertex_a, vertex_b) {
+    this.vertices = [vertex_a, vertex_b];
     this.face;
-    this.nextEdge;
-}
-
-function Edge() {
-    this.halfedge;
-    this.halfedge2;
 }
 
 /* Example! */
@@ -84,6 +94,5 @@ f.addVertex(a);
 f.addVertex(c);
 f.addVertex(b);
 f.addVertex(d);
-console.log(f.vertices);
-f.sortVertices();
-console.log(f.vertices);
+f.makeEdges();
+console.log(f.edges)
