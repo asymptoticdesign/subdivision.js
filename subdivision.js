@@ -7,10 +7,16 @@
  * A javascript library for computational geometry.
  */
 
+//input data 
 function Vertex(_x, _y) {
     this.x = _x;
     this.y = _y;
     this.edge;
+}
+
+function Edge(vertex_a, vertex_b) {
+    this.a = vertex_a;
+    this.b = vertex_b;
 }
 
 function Face() {
