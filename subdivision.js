@@ -11,12 +11,11 @@
 function Vertex(_x, _y) {
     this.x = _x;
     this.y = _y;
-    this.edge;
 }
 
-function Edge(vertex_a, vertex_b) {
-    this.a = vertex_a;
-    this.b = vertex_b;
+function Edge(_vertexA, _vertexB) {
+    this.a = _vertexA;
+    this.b = _vertexB;
 }
 
 function Face() {
@@ -67,6 +66,9 @@ Face.prototype.sortVertices = function() {
 }
 
 Face.prototype.subdivide = function() {
+    /*
+     * Implementation of a basic proportional subdivision algorithm.
+     */
 }
 
 function HalfEdge(_vertex) {
@@ -77,65 +79,22 @@ function HalfEdge(_vertex) {
     this.prev;
 }
 
-function GeometryManager(_faces) {
-    this.faces = _faces;
-    this.vertices = _faces.vertices;
+function GeometryManager() {
+    /*
+     * A class that manages the global vertex / edge / face space, subdivision, etc.
+     * This stores data as a doubly-conneted edge list.
+     */
+    this.faces = [];
+    this.vertices = [];
+    this.edges = [];
     this.halfedges = [];
-    this.twinList = [];
 }
 
-GeometryManager.prototype.makeEdges = function() {
+GeometryManager.prototype.makeEdges = function(_vertexList, _edgeList) {
     /*
-     * Creates the half-edge data structure from a list of faces (and their associated vertices).  This function takes each face, sorts the vertices, and creates half-edges in a loop around that face.  The half-edges are temporarily stored in the variable faceEdges until the ring is complete, and then the .next and .prev pointers are added before the faceEdges are added to the global list of edges (this.halfedges).  The half-edge pairs are created simultaneously, with the twin being placed in a list of spare twins.  Before creating a new edge, we always search the twinList for any edges that already represent the edge we're looking for.
+     * Creates the half-edge data structure from a graph (vertices and edges).
      */
-    for(var i = 0; i < this.faces.length; i++) {
-	var faceEdges = [];
-	face = this.faces[i];
-	face.sortVertices();
-	//for all vertices in the face
-	for(var j = 0; j < face.vertices.length; j++) {
-	    if(this.twinList) {
-		for(var k = 0; k < this.twinList.length; k++) {
-		    //loop over all existing edges created as twins
-		    if (face.vertices[j] == twinList[k].origin) {
-			//if this vertex is the origin of a twin, use that twin
-			twinList[k].face = face;
-			face.edge = twinList[k];
-			faceEdges.push(twinList[k]);
-		    }
-		    else {
-			//if we can't find a twin that belong to this vertex, then create both the twin and new halfedge from scratch.
-			var halfedge = new HalfEdge(face.vertices[j]);
-			halfedge.face = face;
-			face.edge = halfedge;
-			faceEdges.push(halfedge);
-			//create the twin
-			var twin = new HalfEdge(this.vertices[(j+1) % this.vertices.length]);
-			twin.face = undefined;
-			twinList.push(twin);
-		    }
-		}
-	    }
-	    else {
-		var halfedge = new HalfEdge(face.vertices[j]);
-		halfedge.face = face;
-		face.edge = halfedge;
-		faceEdges.push(halfedge);
-		//create the twin
-		var twin = new HalfEdge(this.vertices[(j+1) % this.vertices.length]);
-		twin.face = undefined;
-		twinList.push(twin);
-	    }
-	}
-	//and then add the next and previous pointers
-	var edgeListLength = this.halfedges.length;
-	for(var j = 0; j < edgeListLength; j++) {
-	    console.log((j-1) % edgeListLength);
-	    faceEdges[j].next = faceEdges[(((j+1) % edgeListLength) + edgeListLength) % edgeListLength];
-	    faceEdges[j].prev = faceEdges[(((j-1) % edgeListLength) + edgeListLength) % edgeListLength];
-	}
-	this.halfedges.push(faceEdges);
-    }
+    
 }
     
 /* Example! */
