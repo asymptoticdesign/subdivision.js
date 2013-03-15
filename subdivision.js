@@ -20,9 +20,7 @@ function Edge(_vertexA, _vertexB) {
 
 function Face() {
     this.vertices = [];
-    this.edges = [];
-    this.edge;
-    this.centroid;
+    this.centroid = null;
 }
 
 Face.prototype.addVertex = function(_vertex) {
@@ -59,7 +57,7 @@ Face.prototype.sortVertices = function() {
 	//create a pair of vertex-angle objects for sorting
 	angleList.push([this.vertices[i], angleFromCentroid]);
     }
-    angleList.sort(function(a,b) {return a[1] - b[1]});
+    angleList.sort(function(a,b) {return a[1] - b[1];});
     for(var i = 0; i < this.vertices.length; i++) {
 	this.vertices[i] = angleList[i][0];
     }
@@ -73,10 +71,11 @@ Face.prototype.subdivide = function() {
 
 function HalfEdge(_vertex) {
     this.origin = _vertex;
-    this.face;
-    this.twin;
-    this.next;
-    this.prev;
+    this.face = null;
+    this.twin = null;
+    this.next = null;
+    this.nextVertex = null;
+    this.prev = null;
 }
 
 function GeometryManager() {
@@ -86,17 +85,42 @@ function GeometryManager() {
      */
     this.faces = [];
     this.vertices = [];
-    this.edges = [];
     this.halfedges = [];
 }
 
-GeometryManager.prototype.makeEdges = function(_vertexList, _edgeList) {
+GeometryManager.prototype.makeEdges = function(faceList) {
     /*
-     * Creates the half-edge data structure from a graph (vertices and edges).
+     * Creates the half-edge data structure from a list of vertices and faces.
      */
-    
+    for(var i = 0; i < faceList.length; i++) {
+	var face = faceList[i];
+	//sort the vertices so we know their ordering (and therefore, implicitly, the edges).
+	face.sortVertices();
+	//for each vertex create a half-edge
+	for(var j = 0; j < face.vertices.length; j++) {
+	    var newEdge = new HalfEdge(face.vertices[j]);
+	    newEdge.face = face;
+	    newEdge.nextVertex = face.vertices[(j+1) % face.vertices.length];
+	    this.halfedges.push(newEdge);
+	}
+    }
+    //all half-edges should have been created.  Now we investigate looking for previous, twin, and next pointers.
+    for(var i = 0; i < this.halfedges.length; i++) {
+	for(var j = 0; j < this.halfedges.length; j++) {
+	    //check if the two edges are neighbors; they share a face and are neighbors
+	    if(this.halfedges[i].nextVertex == this.halfedges[j].origin && this.halfedges[i].face == this.halfedges[j].face) {
+		this.halfedges[i].next = this.halfedges[j];
+		this.halfedges[j].prev = this.halfedges[i];
+	    }
+	    //check if the two edges are twins; they won't share a face
+	    if(this.halfedges[i].nextVertex == this.halfedges[j].origin && this.halfedges[i].face != this.halfedges[j].face) {
+		this.halfedges[i].twin = this.halfedges[j];
+		this.halfedges[j].twin = this.halfedges[i];
+	    }
+	}
+    }
 }
-    
+
 /* Example! */
 
 //create vertices in a random order
@@ -108,15 +132,18 @@ e = new Vertex(-5,10);
 f = new Vertex(-5,-10);
 
 //create a face out of vertices
-f = new Face();
-f.addVertex(a);
-f.addVertex(c);
-f.addVertex(b);
-f.addVertex(d);
-g = new Face();
-g.addVertex(a);
-g.addVertex(b);
-g.addVertex(e);
-g.addVertex(f);
-geo = new GeometryManager([f,g]);
-geo.makeEdges();
+q = new Face();
+q.addVertex(a);
+q.addVertex(c);
+q.addVertex(b);
+q.addVertex(d);
+p = new Face();
+p.addVertex(a);
+p.addVertex(b);
+p.addVertex(e);
+p.addVertex(f);
+geo = new GeometryManager();
+geo.makeEdges([q,p]);
+for(var i = 0; i < geo.halfedges.length; i++) {
+    console.log(geo.halfedges[i].twin);
+}
