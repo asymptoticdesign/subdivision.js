@@ -1,4 +1,4 @@
-/*
+B77;10102;0c/*
  * subdivision.js
  * author: nathan lachenmyer <scottnla AT mit DOT edu>
  * last updated: 2013 March 13
@@ -63,12 +63,6 @@ Face.prototype.sortVertices = function() {
     }
 }
 
-Face.prototype.subdivide = function() {
-    /*
-     * Implementation of a basic proportional subdivision algorithm.
-     */
-}
-
 function HalfEdge(_vertex) {
     this.origin = _vertex;
     this.face = null;
@@ -86,6 +80,10 @@ function GeometryManager() {
     this.faces = [];
     this.vertices = [];
     this.halfedges = [];
+}
+
+GeometryManager.prototype.addVertex = function(_vertex) {
+    this.vertices.push(_vertex);
 }
 
 GeometryManager.prototype.makeEdges = function(faceList) {
@@ -121,29 +119,21 @@ GeometryManager.prototype.makeEdges = function(faceList) {
     }
 }
 
-/* Example! */
+GeometryManager.prototype.isLeft = function(vertex0, vertex1, vertex2) {
+    var determinant = vertex0.x*vertex1.y + vertex1.x*vertex2.y + vertex2.x*vertex0.y - vertex2.x*vertex1.y - vertex1.x*vertex0.y - vertex0.x*vertex2.y;
+    if(determinant > 0) {
+	return true;
+    }
+    else if(determinant < 0) {
+	return false;
+    }
+    else {
+	return null;
+    }
+    
+}
 
-//create vertices in a random order
-a = new Vertex(0,-5);
-b = new Vertex(0,5);
-c = new Vertex(5,10);
-d = new Vertex(5,-10);
-e = new Vertex(-5,10);
-f = new Vertex(-5,-10);
-
-//create a face out of vertices
-q = new Face();
-q.addVertex(a);
-q.addVertex(c);
-q.addVertex(b);
-q.addVertex(d);
-p = new Face();
-p.addVertex(a);
-p.addVertex(b);
-p.addVertex(e);
-p.addVertex(f);
-geo = new GeometryManager();
-geo.makeEdges([q,p]);
-for(var i = 0; i < geo.halfedges.length; i++) {
-    console.log(geo.halfedges[i].twin);
+GeometryManager.prototype.makeConvexHull2D = function() {
+   var initialPoint;
+    forEach
 }
