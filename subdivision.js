@@ -1,4 +1,4 @@
-B77;10102;0c/*
+/*
  * subdivision.js
  * author: nathan lachenmyer <scottnla AT mit DOT edu>
  * last updated: 2013 March 13
@@ -120,20 +120,78 @@ GeometryManager.prototype.makeEdges = function(faceList) {
 }
 
 GeometryManager.prototype.isLeft = function(vertex0, vertex1, vertex2) {
+    /*
+     * Computed using the determinant method.
+     */
     var determinant = vertex0.x*vertex1.y + vertex1.x*vertex2.y + vertex2.x*vertex0.y - vertex2.x*vertex1.y - vertex1.x*vertex0.y - vertex0.x*vertex2.y;
     if(determinant > 0) {
 	return true;
     }
-    else if(determinant < 0) {
+    else {
 	return false;
     }
-    else {
-	return null;
-    }
-    
 }
 
-GeometryManager.prototype.makeConvexHull2D = function() {
-   var initialPoint;
-    forEach
+GeometryManager.prototype.jarvisMarch = function() {
+    /*
+     * Uses Jarvis' March to compute the convex hull.
+     */
+
+    //create a list of holding the points on the hull
+    var pointsOnHull = [];
+    pointsOnHull.push(this.vertices[0]);
+
+    //compute the leftmost point; this is our initial point for computing the convex hull.
+    for(var i = 1; i < this.vertices.length; i++) {
+	if(this.vertices[i].x < pointsOnHull[0].x) {
+	    pointsOnHull[0] = this.vertices[i];	    
+	}
+    }
+
+    console.log("Initial Point found!");
+    console.log(pointsOnHull);
+
+    //begin march
+    for(var i = 0; i < pointsOnHull.length - 1; i++) {
+	var p = pointsOnHull[i];
+	var q = nextHullPoint(this.vertices, p);
+	if (q != pointsOnHull[0]) {
+	    pointsOnHull.append(q);
+	}
+    }
+
+    function nextHullPoint(_vertices, currentPoint) {
+	/*
+	 * Returns the next point on the convex hull
+	 */
+	console.log("Vertices: " + _vertices);
+	var q = currentPoint;
+	for(var j = 0; j < _vertices.length - 1; j++) {
+	    var r = vertices[j];
+	    if(!this.isLeft(currentPoint, q, r)) {
+		q = r;
+	    }
+	}
+	return q;
+    }
+
+    return pointsOnHull;
+}
+
+function testConvexHull2D() {
+    geo = new GeometryManager();
+    a = new Vertex(0,-5);
+    b = new Vertex(0,5);
+    c = new Vertex(5,10);
+    d = new Vertex(5,-10);
+    e = new Vertex(-5,10);
+    f = new Vertex(-5,-10);
+    geo.addVertex(a);
+    geo.addVertex(b);
+    geo.addVertex(c);
+    geo.addVertex(d);
+    geo.addVertex(e);
+    geo.addVertex(f);
+    var hull = geo.jarvisMarch();
+    console.log(hull);
 }
